@@ -1,0 +1,388 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#070b12"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>J.A.R.V.I.S.</title>
+<style>
+:root{--bg:#070b12;--bg2:#0c1320;--card:#0f1a2b;--line:#1b2d49;--ac:#4fc3f7;--ac2:#2979ff;--ok:#3ddc97;--bad:#ff5c6c;--tx:#e6f1ff;--mut:#7f93b2;--glow:rgba(79,195,247,.35)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:14px "Segoe UI",system-ui,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--ac)}
+.app{display:grid;grid-template-columns:190px 1fr 330px;height:100%;background:radial-gradient(900px 500px at 70% -150px,#0f2a4a,transparent 70%)}
+aside{border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:6px}
+.logo{font-weight:800;letter-spacing:.3em;color:var(--ac);text-shadow:0 0 14px var(--glow);padding:0 8px 16px}
+nav button{text-align:left;padding:11px 12px;border-radius:12px;color:var(--mut);font-weight:600}
+nav button.act{background:var(--card);color:var(--ac);border:1px solid var(--line)}
+nav button:hover{color:var(--tx)}
+main{overflow-y:auto;padding:18px 22px}
+.tab{display:none}.tab.act{display:block}
+h2{margin:0 0 12px;font-size:18px}h3{margin:0 0 8px;font-size:12px;letter-spacing:.14em;color:var(--mut);text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:16px;padding:14px}
+.btn{padding:9px 16px;border-radius:12px;font-weight:700;background:var(--card);border:1px solid var(--line)}
+.btn.main{background:linear-gradient(135deg,var(--ac2),var(--ac));color:#031020;border:0}
+.btn.stop{background:rgba(255,92,108,.12);color:var(--bad);border:1px solid rgba(255,92,108,.4)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.chip{padding:6px 11px;border-radius:99px;background:var(--bg2);border:1px solid var(--line);font-size:12.5px;color:#b9d6f5}
+.out{margin-top:8px;min-height:22px;color:var(--ac);white-space:pre-line}.t2{color:var(--mut);font-size:12.5px}
+/* right panel */
+.side{border-left:1px solid var(--line);padding:18px;display:flex;flex-direction:column;align-items:center;min-height:0}
+.reactor{position:relative;width:190px;height:190px;display:grid;place-items:center;cursor:pointer}
+.reactor svg{position:absolute;inset:0}.r1{transform-origin:50% 50%;animation:sp 14s linear infinite}.r2{transform-origin:50% 50%;animation:sp 9s linear infinite reverse}
+@keyframes sp{to{transform:rotate(360deg)}}
+.core{width:34%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#e8fbff,var(--ac) 38%,rgba(41,121,255,.15) 72%);box-shadow:0 0 40px 6px var(--glow);animation:bt 2.4s ease-in-out infinite}
+@keyframes bt{50%{transform:scale(1.12)}}
+.reactor.off svg{filter:grayscale(1) brightness(.5)}.reactor.off .r1,.reactor.off .r2,.reactor.off .core{animation:none}
+.reactor.off .core{background:radial-gradient(circle,#44566f,#25324a 60%,transparent 75%);box-shadow:none}
+#state{margin-top:12px;font-weight:700;letter-spacing:.2em;font-size:12px;color:var(--ac)}#state.off{color:var(--mut)}
+#heard{margin:6px 0 10px;min-height:34px;text-align:center;color:var(--mut);font-size:13px}
+#log{flex:1;width:100%;overflow-y:auto;margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:12.5px;line-height:1.5}
+#log .u{color:#fff}#log .j{color:var(--ac)}#log .a{color:var(--ok)}#log .e{color:var(--bad)}#log div{color:var(--mut)}
+/* chat */
+#chatlog{height:calc(100vh - 150px);overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.m{max-width:70%;padding:9px 13px;border-radius:14px;white-space:pre-wrap}
+.m.u{align-self:flex-end;background:var(--ac2)}.m.b{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
+.m small{display:block;color:var(--mut);margin-top:4px}
+.ci{display:flex;gap:8px;margin-top:10px}
+/* modal */
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center}.veil.show{display:grid}
+.modal{width:620px;max-height:90vh;overflow:auto}.ar{display:grid;grid-template-columns:230px 1fr 34px;gap:8px;margin-top:8px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--ac);padding:9px 16px;border-radius:99px;display:none}
+.xi{display:flex;gap:8px;align-items:center;margin-top:6px;padding:6px 8px;background:var(--bg2);border-radius:10px;border:1px solid var(--line)}.xi span{flex:1}.done{text-decoration:line-through;color:var(--mut)}
+
+.app{display:block;height:100%;background:radial-gradient(700px 400px at 50% -120px,#0f2a4a,transparent 70%)}
+main{position:absolute;inset:0 0 62px 0;padding:max(14px,env(safe-area-inset-top)) 14px 20px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:4}
+nav button{flex:1;padding:7px 0 6px;font-size:10.5px;color:var(--mut);text-align:center;display:flex;flex-direction:column;gap:2px;align-items:center}
+nav button b{font-size:17px;font-weight:400}nav button.act{color:var(--ac)}
+.grid{grid-template-columns:1fr}.m{max-width:88%}.modal{width:94vw}.ar{grid-template-columns:1fr 34px}.ar select{grid-column:1/-1}
+#chatlog{height:calc(100dvh - 215px)}#log{height:calc(100dvh - 170px);margin:0;border:0;padding-top:0;width:auto}
+.chip.on{border-color:var(--ac);color:var(--ac)}.logo{padding:0}
+#pend{position:fixed;left:12px;right:12px;bottom:72px;z-index:6;display:none}#pend .btn{width:100%;box-shadow:0 8px 24px rgba(0,0,0,.6)}
+input,select,textarea{font-size:16px}
+</style></head><body>
+<div class="app">
+
+<main>
+<section class="tab act" id="t-home">
+<div style="display:flex;justify-content:space-between;align-items:center"><div class="logo">J.A.R.V.I.S.</div><div class="row" style="margin:0"><button class="chip" data-l="ru">RU</button><button class="chip" data-l="en">EN</button><button class="chip" data-l="uk">UK</button></div></div>
+<div style="display:flex;flex-direction:column;align-items:center;padding:14px 0 8px"><div class="reactor off" id="reactor"><svg viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fc3f7"/><stop offset="1" stop-color="#2979ff"/></linearGradient></defs>
+<circle cx="100" cy="100" r="96" fill="none" stroke="#1b2d49" stroke-width="1.5"/><g class="r1"><circle cx="100" cy="100" r="90" fill="none" stroke="url(#g)" stroke-width="3" stroke-dasharray="60 24 14 24" stroke-linecap="round"/></g>
+<g class="r2"><circle cx="100" cy="100" r="68" fill="none" stroke="#4fc3f7" stroke-opacity=".7" stroke-width="1.6" stroke-dasharray="3 9"/></g></svg><div class="core"></div></div>
+<div id="state" class="off">ОТКЛЮЧЁН</div><div id="heard" style="text-align:center;margin:6px 0 4px;color:var(--mut)">Нажмите на реактор — и скажите «Джарвис»</div></div>
+<button class="btn main" id="mainBtn" style="width:100%;padding:14px">▶ Запустить Jarvis</button>
+<div class="card" id="keyWarn" style="display:none;margin-top:12px;border-color:rgba(255,183,77,.5)"><h3>🔑 Нужен API-ключ</h3><div class="t2">Добавьте ключ Groq или Gemini, чтобы Джарвис мог думать и отвечать.</div><div class="row"><button class="btn" id="toSet">Открыть настройки</button></div></div>
+<div class="card" style="margin-top:12px"><h3>🎙 Как пользоваться</h3><div class="t2">Скажите «Джарвис» — он ответит «Слушаю, сэр» и будет ждать команду. Или сразу: «Джарвис, включи фонарик».</div></div>
+<div class="card" style="margin-top:12px"><h3>Разрешения</h3><div class="t2">Микрофон нужен для голоса. Экран остаётся включённым, пока Jarvis слушает.</div><div class="row"><button class="btn" id="micB">Разрешить микрофон</button></div></div>
+</section>
+<section class="tab" id="t-log"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Журнал</h2><button class="chip" id="clr">Очистить журнал</button></div><div id="log"></div></section>
+<section class="tab" id="t-chat"><h2>Чат с Джарвисом</h2>
+<div id="chatlog"><div class="t2" id="empty">Пишите вопрос или команду: «открой телеграм», «какая погода в Берлине», «громче».</div></div>
+<div class="ci"><input id="chatin" placeholder="Сообщение Джарвису…" autocomplete="off"><button class="btn main" id="send">Отправить</button></div></section>
+
+<section class="tab" id="t-auto"><div style="display:flex;justify-content:space-between"><h2>Команды-автоматизации</h2><button class="btn main" id="newA">＋ Новая</button></div>
+<div class="t2">Фраза → набор действий. Сработает, если после слова «Джарвис» прозвучит фраза-триггер.</div><div class="grid" id="autos" style="margin-top:12px"></div></section>
+
+<section class="tab" id="t-fun"><h2>Фишки</h2><div class="grid">
+<div class="card"><h3>📋 Доклад</h3><div class="out" id="rep">Нажмите кнопку.</div><div class="row"><button class="btn main" id="repB">Доклад, Джарвис</button></div></div>
+<div class="card"><h3>🎛 Пульт телефона</h3><div class="row" id="pult"></div></div>
+<div class="card"><h3>📱 Приложения</h3><input id="app" placeholder="Название: telegram, whatsapp, youtube…"><div class="row"><button class="btn main" data-do="open_app">Открыть</button></div></div>
+<div class="card"><h3>📞 Звонки и SMS</h3><input id="c_call" type="tel" placeholder="Номер телефона"><input id="c_smsT" placeholder="Текст SMS" style="margin-top:8px"><div class="row"><button class="btn main" id="callB">Позвонить</button><button class="btn" id="smsB">SMS</button></div></div>
+<div class="card"><h3>🔎 Поиск и маршрут</h3><input id="web" placeholder="Запрос или адрес"><div class="row"><button class="btn main" data-do="web_search">Найти</button><button class="btn" data-do="navigate">Маршрут</button><button class="btn" data-do="youtube">YouTube</button></div></div>
+<div class="card"><h3>🎱 Шар</h3><input id="ballq" placeholder="Вопрос да/нет"><div class="out" id="ballo"></div><div class="row"><button class="btn main" id="ballB">Спросить</button></div></div>
+<div class="card"><h3>🎲 Случайность</h3><div class="out" id="rnd">?</div><div class="row"><button class="chip" data-r="coin">🪙 Монетка</button><button class="chip" data-r="6">🎲 D6</button><button class="chip" data-r="20">🔮 D20</button><button class="chip" data-r="100">🔢 1–100</button></div></div>
+<div class="card"><h3>😄 Шутка и факт</h3><div class="out" id="jk">Нужна порция юмора?</div><div class="row"><button class="btn main" id="jokeB">Шутка</button><button class="btn" id="factB">Факт</button></div></div>
+<div class="card"><h3>⏱ Таймер</h3><div class="row"><button class="chip" data-tm="5">5 мин</button><button class="chip" data-tm="10">10 мин</button><button class="chip" data-tm="25">🍅 25</button><button class="chip" data-tm="60">1 час</button></div></div>
+<div class="card"><h3>🧮 Посчитать</h3><input id="calc" placeholder="(12+8)*3/4"><div class="out" id="calco"></div><div class="row"><button class="btn main" id="calcB">Посчитать</button></div></div>
+<div class="card"><h3>⏱ Секундомер</h3><div class="out" id="swo">00:00.00</div><div class="row"><button class="btn main" id="swb">Старт</button><button class="btn" id="swl2">Круг</button><button class="btn" id="swr">Сброс</button></div><div class="t2" id="swl" style="white-space:pre-line;margin-top:6px"></div></div>
+<div class="card"><h3>🔁 Конвертер</h3><select id="cvc"></select><input id="cvv" placeholder="10" style="margin-top:8px"><div class="row"><select id="cvf" style="flex:1"></select><select id="cvt" style="flex:1"></select></div><div class="out" id="cvo">Результат появится здесь.</div></div>
+<div class="card"><h3>🔐 Пароль</h3><div class="row"><input id="pwl" type="number" value="16" min="8" max="64" style="width:80px"><button class="btn main" id="pwb">Сгенерировать</button></div><div class="out" id="pwo" style="word-break:break-all;user-select:all"></div></div>
+<div class="card"><h3>📝 Заметки</h3><input id="nin" placeholder="Быстрая заметка"><div id="notes"></div></div>
+<div class="card"><h3>✅ Список дел</h3><input id="tin" placeholder="Что сделать"><div id="todos"></div></div>
+</div></section>
+
+<section class="tab" id="t-set"><h2>Настройки</h2><div class="grid">
+<div class="card"><h3>API-ключ <span id="prov" class="chip"></span></h3><input id="key" type="password" placeholder="gsk_… (Groq)  или  AIza… (Gemini)">
+<div class="t2" style="margin-top:6px">Бесплатный ключ: console.groq.com/keys или aistudio.google.com/apikey</div>
+<div class="row"><button class="btn main" id="saveK">Сохранить</button><button class="btn" data-url="https://console.groq.com/keys">Ключ Groq</button><button class="btn" data-url="https://aistudio.google.com/apikey">Ключ Gemini</button></div></div>
+<div class="card"><h3>🌐 Язык</h3><select id="lang"><option value="ru">Русский</option><option value="en">English</option><option value="uk">Українська</option></select></div>
+<div class="card"><h3>Голос</h3><label><input type="checkbox" id="spk" style="width:auto"> Озвучивать ответы</label>
+<div class="t2" style="margin-top:8px">Слово активации — «Джарвис». Нужен Chrome на Android и интернет. Окно держите открытым, экран включённым.</div></div>
+<div class="card"><h3>Без интернета</h3><div class="t2">Время, монетка, кубик, шутки, факты, таймер, калькулятор и ваши команды работают офлайн. Остальное — через нейросеть.</div></div>
+</div></section>
+</main>
+<nav><button class="act" data-t="home"><b>◎</b><span>Главная</span></button><button data-t="chat"><b>💬</b><span>Чат</span></button><button data-t="auto"><b>⚡</b><span>Команды</span></button><button data-t="log"><b>📜</b><span>Журнал</span></button><button data-t="fun"><b>✨</b><span>Фишки</span></button><button data-t="set"><b>⚙</b><span>Настройки</span></button></nav>
+<div id="pend"><button class="btn main" id="pendB"></button></div>
+
+
+</div>
+
+<div class="veil" id="veil"><div class="card modal"><h2 id="mt">Новая автоматизация</h2>
+<div class="t2">Фраза-триггер</div><input id="fT" placeholder="например: доброе утро">
+<div class="t2" style="margin-top:8px">Ответ голосом (необязательно)</div><input id="fS" placeholder="Доброе утро, сэр!">
+<div class="t2" style="margin-top:8px">Действия</div><div id="fA"></div>
+<div class="row"><button class="btn" id="addA">＋ Действие</button><div style="flex:1"></div><button class="btn" id="cancelA">Отмена</button><button class="btn main" id="saveA">Сохранить</button></div></div></div>
+<div id="toast"></div>
+
+<script>
+const $=i=>document.getElementById(i),ls=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},sv=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const pick=a=>a[Math.floor(Math.random()*a.length)],esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let toastT;const toast=t=>{const e=$('toast');e.textContent=tr(t);e.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>e.style.display='none',2200)};
+const YT='https://www.youtube.com/results?search_query=';
+const LC={ru:'ru-RU',en:'en-US',uk:'uk-UA'},LN={ru:'русский',en:'English',uk:'українська'},WAKE=/джарвис|джарвіс|жарвіс|jarvis|ярвис|харвис/;
+const D={
+[`💬 Чат`]:[`💬 Chat`,`💬 Чат`],[`⚡ Команды`]:[`⚡ Commands`,`⚡ Команди`],[`✨ Фишки`]:[`✨ Extras`,`✨ Фішки`],[`⚙ Настройки`]:[`⚙ Settings`,`⚙ Налаштування`],
+[`Чат с Джарвисом`]:[`Chat with Jarvis`,`Чат із Джарвісом`],
+[`Пишите вопрос или команду: «открой телеграм», «какая погода в Берлине», «громче».`]:[`Type a question or command: "open telegram", "weather in Berlin", "volume up".`,`Пишіть питання чи команду: «відкрий телеграм», «яка погода в Берліні», «гучніше».`],
+[`Отправить`]:[`Send`,`Надіслати`],[`Команды-автоматизации`]:[`Command automations`,`Команди-автоматизації`],[`＋ Новая`]:[`＋ New`,`＋ Нова`],
+[`Фраза → набор действий. Сработает, если после слова «Джарвис» прозвучит фраза-триггер.`]:[`Phrase → set of actions. Runs when the trigger phrase follows the word "Jarvis".`,`Фраза → набір дій. Спрацює, якщо після слова «Джарвіс» прозвучить фраза-тригер.`],
+[`Фишки`]:[`Extras`,`Фішки`],[`📋 Доклад`]:[`📋 Report`,`📋 Доповідь`],[`Нажмите кнопку.`]:[`Press the button.`,`Натисніть кнопку.`],[`Доклад, Джарвис`]:[`Report, Jarvis`,`Доповідь, Джарвісе`],
+[`🎛 Пульт ПК`]:[`🎛 PC remote`,``],[`🖥 Приложения`]:[`🖥 Apps`,`🖥 Програми`],[`Открыть`]:[`Open`,`Відкрити`],[`Закрыть`]:[`Close`,`Закрити`],
+[`🔎 Поиск и маршрут`]:[`🔎 Search & route`,`🔎 Пошук і маршрут`],[`Найти`]:[`Search`,`Знайти`],[`Маршрут`]:[`Route`,``],
+[`🎱 Шар`]:[`🎱 Magic ball`,`🎱 Куля`],[`Спросить`]:[`Ask`,`Запитати`],[`🎲 Случайность`]:[`🎲 Random`,`🎲 Випадковість`],[`🪙 Монетка`]:[`🪙 Coin`,``],
+[`😄 Шутка и факт`]:[`😄 Joke & fact`,`😄 Жарт і факт`],[`Нужна порция юмора?`]:[`Need a dose of humor?`,`Потрібна порція гумору?`],[`Шутка`]:[`Joke`,`Жарт`],[`Факт`]:[`Fact`,``],
+[`⏱ Таймер`]:[`⏱ Timer`,``],[`5 мин`]:[`5 min`,`5 хв`],[`10 мин`]:[`10 min`,`10 хв`],[`1 час`]:[`1 hour`,`1 година`],
+[`🧮 Посчитать`]:[`🧮 Calculator`,`🧮 Порахувати`],[`Посчитать`]:[`Calculate`,`Порахувати`],[`📝 Заметки`]:[`📝 Notes`,`📝 Нотатки`],[`✅ Список дел`]:[`✅ To-do list`,`✅ Список справ`],
+[`⏱ Секундомер`]:[`⏱ Stopwatch`,`⏱ Секундомір`],[`Старт`]:[`Start`,``],[`Круг`]:[`Lap`,`Коло`],[`Сброс`]:[`Reset`,`Скинути`],[`Пауза`]:[`Pause`,``],[`Продолжить`]:[`Resume`,`Продовжити`],
+[`🔁 Конвертер`]:[`🔁 Converter`,`🔁 Конвертер`],[`Результат появится здесь.`]:[`The result will appear here.`,`Результат з'явиться тут.`],[`🔐 Пароль`]:[`🔐 Password`,`🔐 Пароль`],[`Сгенерировать`]:[`Generate`,`Згенерувати`],
+[`Длина`]:[`Length`,`Довжина`],[`Масса`]:[`Mass`,`Маса`],[`Объём`]:[`Volume`,`Об'єм`],[`Скорость`]:[`Speed`,`Швидкість`],[`Температура`]:[`Temperature`,``],
+[`Настройки`]:[`Settings`,`Налаштування`],[`🌐 Язык`]:[`🌐 Language`,`🌐 Мова`],[`API-ключ`]:[`API key`,`API-ключ`],
+[`Бесплатный ключ: console.groq.com/keys или aistudio.google.com/apikey`]:[`Free key: console.groq.com/keys or aistudio.google.com/apikey`,`Безкоштовний ключ: console.groq.com/keys або aistudio.google.com/apikey`],
+[`Сохранить`]:[`Save`,`Зберегти`],[`Ключ Groq`]:[`Groq key`,``],[`Ключ Gemini`]:[`Gemini key`,``],[`Голос`]:[`Voice`,``],[`Озвучивать ответы`]:[`Speak replies`,`Озвучувати відповіді`],
+[`Слово активации — «Джарвис». Распознавание речи работает в Edge/Chrome и требует интернета.`]:[`Wake word: "Jarvis". Speech recognition works in Edge/Chrome and needs internet.`,`Слово активації — «Джарвіс». Розпізнавання мови працює в Edge/Chrome і потребує інтернету.`],
+[`Без интернета`]:[`Offline`,`Без інтернету`],
+[`Время, монетка, кубик, шутки, факты, таймер, калькулятор и ваши команды работают офлайн. Остальное — через нейросеть.`]:[`Time, coin, dice, jokes, facts, timer, calculator and your own commands work offline. Everything else goes through the AI.`,`Час, монетка, кубик, жарти, факти, таймер, калькулятор і ваші команди працюють офлайн. Решта — через нейромережу.`],
+[`ОТКЛЮЧЁН`]:[`OFFLINE`,`ВИМКНЕНО`],[`ОНЛАЙН · СЛУШАЮ`]:[`ONLINE · LISTENING`,`ОНЛАЙН · СЛУХАЮ`],
+[`Нажмите на реактор — и скажите «Джарвис»`]:[`Click the reactor and say "Jarvis"`,`Натисніть на реактор і скажіть «Джарвіс»`],[`Скажите «Джарвис», затем команду`]:[`Say "Jarvis", then a command`,`Скажіть «Джарвіс», потім команду`],
+[`▶ Запустить Jarvis`]:[`▶ Start Jarvis`,`▶ Запустити Jarvis`],[`■ Остановить`]:[`■ Stop`,`■ Зупинити`],[`Очистить журнал`]:[`Clear log`,`Очистити журнал`],
+[`Новая автоматизация`]:[`New automation`,`Нова автоматизація`],[`Изменить автоматизацию`]:[`Edit automation`,`Змінити автоматизацію`],[`Фраза-триггер`]:[`Trigger phrase`,`Фраза-тригер`],
+[`Ответ голосом (необязательно)`]:[`Spoken reply (optional)`,`Голосова відповідь (необов'язково)`],[`Действия`]:[`Actions`,`Дії`],[`＋ Действие`]:[`＋ Action`,`＋ Дія`],[`Отмена`]:[`Cancel`,`Скасувати`],
+[`Сообщение Джарвису…`]:[`Message Jarvis…`,`Повідомлення Джарвісу…`],[`Название: telegram, chrome, notepad…`]:[`Name: telegram, chrome, notepad…`,`Назва: telegram, chrome, notepad…`],
+[`Запрос или адрес`]:[`Query or address`,`Запит або адреса`],[`Вопрос да/нет`]:[`Yes/no question`,`Питання так/ні`],[`Быстрая заметка`]:[`Quick note`,`Швидка нотатка`],[`Что сделать`]:[`What to do`,`Що зробити`],
+[`например: доброе утро`]:[`e.g. good morning`,`наприклад: доброго ранку`],[`Доброе утро, сэр!`]:[`Good morning, sir!`,`Доброго ранку, сер!`],
+[`gsk_… (Groq)  или  AIza… (Gemini)`]:[`gsk_… (Groq)  or  AIza… (Gemini)`,`gsk_… (Groq)  або  AIza… (Gemini)`],
+[`Вы:`]:[`You:`,`Ви:`],[`Автоматизация:`]:[`Automation:`,`Автоматизація:`],[`Микрофон:`]:[`Mic:`,`Мікрофон:`],
+[`Ошибка: нет связи с jarvis.ps1`]:[`Error: no connection to jarvis.ps1`,`Помилка: немає зв'язку з jarvis.ps1`],[`Готов к работе, сэр.`]:[`Ready, sir.`,`Готовий до роботи, сер.`],
+[`Запущено. Скажите: «Джарвис, привет».`]:[`Started. Say: "Jarvis, hello".`,`Запущено. Скажіть: «Джарвіс, привіт».`],[`Слушаю, сэр.`]:[`Listening, sir.`,`Слухаю, сер.`],
+[`Журнал очищен`]:[`Log cleared`,`Журнал очищено`],[`Выполняю.`]:[`On it.`,`Виконую.`],[`Джарвис думает…`]:[`Jarvis is thinking…`,`Джарвіс думає…`],[`ошибка`]:[`error`,`помилка`],
+[`Сначала добавьте API-ключ`]:[`Add an API key first`,`Спочатку додайте API-ключ`],[`Нужен Edge или Chrome`]:[`Edge or Chrome required`,`Потрібен Edge або Chrome`],
+[`Введите значение`]:[`Enter a value`,`Введіть значення`],[`Задайте вопрос`]:[`Ask a question`,`Поставте питання`],[`Введите фразу-триггер`]:[`Enter a trigger phrase`,`Введіть фразу-тригер`],
+[`Добавьте действие или ответ`]:[`Add an action or a reply`,`Додайте дію або відповідь`],[`Сохранено ✓`]:[`Saved ✓`,`Збережено ✓`],[`Ключ сохранён ✓`]:[`Key saved ✓`,`Ключ збережено ✓`],[`Ключ очищен`]:[`Key cleared`,`Ключ очищено`],
+[`Время вышло, сэр`]:[`Time is up, sir`,`Час вийшов, сер`],[`Будильник, сэр:`]:[`Alarm, sir:`,`Будильник, сер:`],[`Напомню через {0} мин ⏱`]:[`I'll remind you in {0} min ⏱`,`Нагадаю через {0} хв ⏱`],
+[`Что-то пошло не так.`]:[`Something went wrong.`,`Щось пішло не так.`],[`Сначала добавьте API-ключ в «Настройках».`]:[`Add an API key in Settings first.`,`Спочатку додайте API-ключ у «Налаштуваннях».`],
+[`Нет связи с нейросетью. Проверьте интернет.`]:[`Can't reach the AI. Check your internet.`,`Немає зв'язку з нейромережею. Перевірте інтернет.`],[`Пустой ответ нейросети.`]:[`The AI returned an empty reply.`,`Нейромережа повернула порожню відповідь.`],
+[`Ключ не подошёл ({0}).`]:[`The key was rejected ({0}).`,`Ключ не підійшов ({0}).`],[`Лимит запросов, подождите минуту.`]:[`Rate limit reached, wait a minute.`,`Ліміт запитів, зачекайте хвилину.`],[`Ошибка нейросети {0}.`]:[`AI error {0}.`,`Помилка нейромережі {0}.`],
+[`Сейчас {0}, сэр.`]:[`It's {0}, sir.`,`Зараз {0}, сер.`],[`Орёл, сэр.`]:[`Heads, sir.`,`Орел, сер.`],[`Решка, сэр.`]:[`Tails, sir.`,`Решка, сер.`],[`Орёл`]:[`Heads`,`Орел`],[`Решка`]:[`Tails`,``],
+[`Выпало {0}, сэр.`]:[`You rolled {0}, sir.`,`Випало {0}, сер.`],[`Ваше число: {0}`]:[`Your number: {0}`,`Ваше число: {0}`],[`Таймер на {0} мин запущен.`]:[`Timer set for {0} min.`,`Таймер на {0} хв запущено.`],
+[`Записал, сэр.`]:[`Noted, sir.`,`Записав, сер.`],[`Секундомер запущен.`]:[`Stopwatch started.`,`Секундомір запущено.`],[`Я выбираю: {0}`]:[`I choose: {0}`,`Я обираю: {0}`],
+[`Не понял пример, сэр.`]:[`I didn't get that expression, sir.`,`Не зрозумів приклад, сер.`],[`Пока пусто. Нажмите «＋ Новая».`]:[`Nothing here yet. Press "＋ New".`,`Поки порожньо. Натисніть «＋ Нова».`],[`без параметров`]:[`no parameters`,`без параметрів`],
+[`Доброй ночи`]:[`Good night`,`Доброї ночі`],[`Доброе утро`]:[`Good morning`,`Доброго ранку`],[`Добрый день`]:[`Good afternoon`,`Добрий день`],[`Добрый вечер`]:[`Good evening`,`Добрий вечір`],
+[`Заряд: {0}%`]:[`Battery: {0}%`,`Заряд: {0}%`],[`Все системы в норме.`]:[`All systems nominal.`,`Усі системи в нормі.`],
+[`▶ YouTube`]:[``,``],[`🌐 Ссылка`]:[`🌐 Link`,`🌐 Посилання`],[`🔎 Поиск`]:[`🔎 Search`,`🔎 Пошук`],[`📱 Открыть приложение`]:[`📱 Open app`,`📱 Відкрити програму`],[`✖ Закрыть приложение`]:[`✖ Close app`,`✖ Закрити програму`],
+[`🧭 Маршрут`]:[`🧭 Route`,``],[`🔊 Громче`]:[`🔊 Volume up`,`🔊 Гучніше`],[`🔉 Тише`]:[`🔉 Volume down`,`🔉 Тихіше`],[`🔇 Без звука`]:[`🔇 Mute`,`🔇 Без звуку`],[`⏯ Пауза/плей`]:[`⏯ Play/pause`,`⏯ Пауза/плей`],
+[`⏭ Следующий`]:[`⏭ Next`,`⏭ Наступний`],[`⏮ Предыдущий`]:[`⏮ Previous`,`⏮ Попередній`],[`🔔 Напоминание`]:[`🔔 Reminder`,`🔔 Нагадування`],[`⏰ Будильник`]:[`⏰ Alarm`,``],[`📷 Камера`]:[`📷 Camera`,``],
+[`🏠 Рабочий стол`]:[`🏠 Desktop`,`🏠 Робочий стіл`],[`◀ Назад`]:[`◀ Back`,``],[`🗂 Обзор окон`]:[`🗂 Task view`,`🗂 Огляд вікон`],[`🔒 Блокировка`]:[`🔒 Lock`,`🔒 Блокування`],
+[`что найти`]:[`what to find`,`що знайти`],[`имя процесса`]:[`process name`,`назва процесу`],[`адрес`]:[`address`,`адреса`],[`секунды|текст`]:[`seconds|text`,`секунди|текст`],[`ЧЧ:ММ`]:[`HH:MM`,`ГГ:ХХ`],
+[`🏠 Раб. стол`]:[`🏠 Desktop`,`🏠 Роб. стіл`],[`🗂 Окна`]:[`🗂 Windows`,`🗂 Вікна`],[`🔒 Блок.`]:[`🔒 Lock`,`🔒 Блок.`],[`🔇 Mute`]:[`🔇 Mute`,`🔇 Mute`],
+[`Главная`]:[`Home`,`Головна`],
+[`Чат`]:[`Chat`,`Чат`],
+[`Команды`]:[`Commands`,`Команди`],
+[`Журнал`]:[`Log`,`Журнал`],
+[`🔑 Нужен API-ключ`]:[`🔑 API key needed`,`🔑 Потрібен API-ключ`],
+[`Добавьте ключ Groq или Gemini, чтобы Джарвис мог думать и отвечать.`]:[`Add a Groq or Gemini key so Jarvis can think and answer.`,`Додайте ключ Groq або Gemini, щоб Джарвіс міг думати й відповідати.`],
+[`Открыть настройки`]:[`Open settings`,`Відкрити налаштування`],
+[`🎙 Как пользоваться`]:[`🎙 How to use`,`🎙 Як користуватися`],
+[`Скажите «Джарвис» — он ответит «Слушаю, сэр» и будет ждать команду. Или сразу: «Джарвис, включи фонарик».`]:[`Say "Jarvis" — he will answer "Listening, sir" and wait for a command. Or say it all at once: "Jarvis, turn on the flashlight".`,`Скажіть «Джарвіс» — він відповість «Слухаю, сер» і чекатиме команду. Або одразу: «Джарвіс, увімкни ліхтарик».`],
+[`Разрешения`]:[`Permissions`,`Дозволи`],
+[`Микрофон нужен для голоса. Экран остаётся включённым, пока Jarvis слушает.`]:[`The microphone is needed for voice. The screen stays on while Jarvis listens.`,`Мікрофон потрібен для голосу. Екран лишається ввімкненим, поки Jarvis слухає.`],
+[`Разрешить микрофон`]:[`Allow microphone`,`Дозволити мікрофон`],
+[`🎛 Пульт телефона`]:[`🎛 Phone remote`,`🎛 Пульт телефона`],
+[`📱 Приложения`]:[`📱 Apps`,`📱 Програми`],
+[`Название: telegram, whatsapp, youtube…`]:[`Name: telegram, whatsapp, youtube…`,`Назва: telegram, whatsapp, youtube…`],
+[`📞 Звонки и SMS`]:[`📞 Calls & SMS`,`📞 Дзвінки й SMS`],
+[`Номер телефона`]:[`Phone number`,`Номер телефону`],
+[`Текст SMS`]:[`SMS text`,`Текст SMS`],
+[`Позвонить`]:[`Call`,`Зателефонувати`],
+[`SMS`]:[``,``],
+[`📞 Позвонить`]:[`📞 Call`,`📞 Зателефонувати`],
+[`💬 Написать SMS`]:[`💬 Write SMS`,`💬 Написати SMS`],
+[`🔦 Включить фонарик`]:[`🔦 Flashlight on`,`🔦 Увімкнути ліхтарик`],
+[`🔦 Выключить фонарик`]:[`🔦 Flashlight off`,`🔦 Вимкнути ліхтарик`],
+[`номер телефона`]:[`phone number`,`номер телефону`],
+[`номер|текст`]:[`number|text`,`номер|текст`],
+[`🔦 Фонарик`]:[`🔦 Flashlight`,`🔦 Ліхтарик`],
+[`Нужен номер телефона`]:[`A phone number is needed`,`Потрібен номер телефону`],
+[`Не знаю приложение: {0}`]:[`I don't know the app: {0}`,`Не знаю програму: {0}`],
+[`Открыть: {0}`]:[`Open: {0}`,`Відкрити: {0}`],
+[`Ошибка: фонарик недоступен`]:[`Error: flashlight unavailable`,`Помилка: ліхтарик недоступний`],
+[`Фонарик недоступен в этом браузере`]:[`Flashlight is not available in this browser`,`Ліхтарик недоступний у цьому браузері`],
+[`Android просит касание: нажмите кнопку, чтобы открыть`]:[`Android needs a tap: press the button to open`,`Android просить дотик: натисніть кнопку, щоб відкрити`],
+[`Слово активации — «Джарвис». Нужен Chrome на Android и интернет. Окно держите открытым, экран включённым.`]:[`Wake word: "Jarvis". Needs Chrome on Android and internet. Keep the page open and the screen on.`,`Слово активації — «Джарвіс». Потрібен Chrome на Android та інтернет. Тримайте сторінку відкритою, екран увімкненим.`]
+};
+let lang=ls('lang',/^uk/.test(navigator.language)?'uk':/^ru/.test(navigator.language)?'ru':'en');
+function tr(s,...a){const v=D[s];let r=(!v||lang==='ru')?s:(v[lang==='en'?0:1]||s);a.forEach((x,i)=>r=r.replace('{'+i+'}',x));return r}
+const TYPES={youtube:['▶ YouTube','что найти'],open_url:['🌐 Ссылка','https://…'],web_search:['🔎 Поиск','запрос'],open_app:['📱 Открыть приложение','telegram'],navigate:['🧭 Маршрут','адрес'],call:['📞 Позвонить','номер телефона'],sms:['💬 Написать SMS','номер|текст'],flashlight_on:['🔦 Включить фонарик',''],flashlight_off:['🔦 Выключить фонарик',''],remind:['🔔 Напоминание','секунды|текст'],set_alarm:['⏰ Будильник','ЧЧ:ММ'],camera:['📷 Камера',''],wifi_settings:['📶 Wi-Fi',''],bluetooth_settings:['🔵 Bluetooth','']};
+const ALIAS={'телеграм':'telegram','ватсап':'whatsapp','вотсап':'whatsapp','ютуб':'youtube','инстаграм':'instagram','інстаграм':'instagram','хром':'chrome','карты':'maps','карти':'maps','мапи':'maps','спотифай':'spotify','почта':'gmail','пошта':'gmail','вайбер':'viber','тикток':'tiktok','дискорд':'discord','фейсбук':'facebook'};
+const PK={telegram:'org.telegram.messenger',whatsapp:'com.whatsapp',youtube:'com.google.android.youtube',instagram:'com.instagram.android',chrome:'com.android.chrome',maps:'com.google.android.apps.maps',spotify:'com.spotify.music',gmail:'com.google.android.gm',viber:'com.viber.voip',tiktok:'com.zhiliaoapp.musically',discord:'com.discord',facebook:'com.facebook.katana'};
+let key=ls('key',''),autos=ls('autos',[]),logA=[],running=false,awake=0,rec=null,busy=false,hist=[];
+const log=t=>{t=tr(t);logA.push(t);if(logA.length>200)logA.shift();const l=$('log');l.innerHTML=logA.slice(-60).map(x=>'<div class="'+(/^(Вы|You|Ви):/.test(x)?'u':/^Jarvis:/.test(x)?'j':/^(→|Автомат|Automat)/.test(x)?'a':/(Ошибка|Error|Помилка|Микрофон:|Mic:|Мікрофон:)/.test(x)?'e':'')+'">'+esc(x)+'</div>').join('');l.scrollTop=1e9};
+// ---- host / actions ----
+const pend=[];
+function showPend(){const p=$('pend');if(!pend.length){p.style.display='none';return}$('pendB').textContent=tr('Открыть: {0}',pend[0].l);p.style.display='block'}
+function launch(u){const a=document.createElement('a');a.href=u;if(/^https?:/.test(u)){a.target='_blank';a.rel='noopener'}document.body.appendChild(a);a.click();a.remove()}
+function openLink(u,l){if(navigator.userActivation&&!navigator.userActivation.isActive){pend.push({u,l:l||u.slice(0,30)});showPend();toast('Android просит касание: нажмите кнопку, чтобы открыть');return}launch(u)}
+let torchS=null,flashOn=false;
+async function torch(on){try{if(on){if(!torchS)torchS=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});await torchS.getVideoTracks()[0].applyConstraints({advanced:[{torch:true}]})}else if(torchS){torchS.getTracks().forEach(t=>t.stop());torchS=null}}catch(e){torchS&&torchS.getTracks().forEach(t=>t.stop());torchS=null;log('Ошибка: фонарик недоступен');toast('Фонарик недоступен в этом браузере')}}
+let wl=null;async function lockScreen(){try{wl=await navigator.wakeLock.request('screen')}catch(e){}try{Notification.requestPermission()}catch(e){}}
+function unlock(){try{wl&&wl.release()}catch(e){}wl=null}
+document.addEventListener('visibilitychange',()=>{if(running&&document.visibilityState==='visible')lockScreen()});
+function speak(t){if(!t||!$('spk').checked)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=LC[lang];speechSynthesis.speak(u)}catch(e){}}
+function remind(sec,txt){sec=+sec;if(!(sec>0))return;setTimeout(()=>{log('Jarvis: '+txt);speak(txt);toast('🔔 '+txt);try{navigator.vibrate&&navigator.vibrate([200,100,200]);navigator.serviceWorker.ready.then(r=>r.showNotification('Jarvis',{body:txt}))}catch(e){}},sec*1000)}
+function act(type,arg){arg=String(arg||'').trim();log('→ '+type+(arg?': '+arg:''));
+ const I=a=>'intent:#Intent;action='+a+';end';
+ if(type==='youtube')return openLink('https://m.youtube.com/results?search_query='+encodeURIComponent(arg),'YouTube');
+ if(type==='open_url')return /^https?:\/\//.test(arg)&&openLink(arg,arg.replace(/^https?:\/\//,'').slice(0,28));
+ if(type==='web_search')return openLink('https://www.google.com/search?q='+encodeURIComponent(arg),'Google');
+ if(type==='navigate')return openLink('https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(arg),'Maps');
+ if(type==='call'){const n=arg.replace(/[^\d+]/g,'');return n.length<3?toast('Нужен номер телефона'):openLink('tel:'+n,n)}
+ if(type==='sms'){const i=arg.indexOf('|'),to=(i<0?arg:arg.slice(0,i)).replace(/[^\d+]/g,''),tx=i<0?'':arg.slice(i+1);return to.length<3?toast('Нужен номер телефона'):openLink('sms:'+to+'?body='+encodeURIComponent(tx),'SMS '+to)}
+ if(type==='open_app'){const k=ALIAS[arg.toLowerCase()]||arg.toLowerCase(),p=PK[k]||(/^[a-z]\w*(\.\w+)+$/.test(k)?k:null);return p?openLink('intent://#Intent;package='+p+';end',arg):toast(tr('Не знаю приложение: {0}',arg))}
+ if(type==='flashlight_on')return torch(true);if(type==='flashlight_off')return torch(false);
+ if(type==='camera')return openLink(I('android.media.action.IMAGE_CAPTURE'),'Camera');
+ if(type==='wifi_settings')return openLink(I('android.settings.WIFI_SETTINGS'),'Wi-Fi');
+ if(type==='bluetooth_settings')return openLink(I('android.settings.BLUETOOTH_SETTINGS'),'Bluetooth');
+ if(type==='remind'){const i=arg.indexOf('|');return remind(arg.slice(0,i),arg.slice(i+1)||tr('Время вышло, сэр'))}
+ if(type==='set_alarm'){const m=arg.match(/(\d{1,2})[:.](\d\d)/);if(!m)return;return openLink('intent:#Intent;action=android.intent.action.SET_ALARM;i.android.intent.extra.alarm.HOUR='+(+m[1])+';i.android.intent.extra.alarm.MINUTES='+(+m[2])+';S.android.intent.extra.alarm.MESSAGE=Jarvis;B.android.intent.extra.alarm.SKIP_UI=true;end','⏰ '+arg)}}
+const runActs=l=>(l||[]).forEach((a,i)=>setTimeout(()=>act(a.type,a.arg),i*600));
+// ---- AI ----
+const AI_ACTS=Object.keys(TYPES).filter(k=>k!=='youtube');
+const sys=()=>['Ты Jarvis, голосовой ассистент на телефоне Android. Отвечай коротко и дружелюбно. Язык ответов: '+LN[lang]+' (даже если команда на другом языке).','Сейчас: '+new Date().toLocaleString('ru-RU')+'.','Отвечай ТОЛЬКО JSON: {"say":"текст","actions":[{"type":"...","arg":"..."}]}. Нет действий — "actions":[].',
+'type: '+AI_ACTS.join(', ')+', weather (arg = город; say пусто, приложение вернёт данные).','open_app: arg = название (telegram, whatsapp, youtube, instagram, chrome, maps, spotify, gmail, viber, discord). call: arg = номер телефона. sms: arg = "номер|текст". navigate: arg = место. web_search: arg = запрос. open_url: arg = ссылка; видео/музыка: https://m.youtube.com/results?search_query=ЗАПРОС. remind: arg = "СЕКУНДЫ|текст". set_alarm: "ЧЧ:ММ". Telegram: open_url https://t.me/НИК?text=ТЕКСТ.','Громкость, управление музыкой, закрытие приложений и кнопки Назад/Домой недоступны — честно скажи. Звонить по имени нельзя, нужен номер. Не выдумывай действий вне списка. Не выполняй опасных просьб.'].join('\n');
+async function model(msgs){if(!key)throw{c:'nokey'};const gem=key.startsWith('AIza'),ms=gem?['gemini-3.5-flash','gemini-flash-latest']:['openai/gpt-oss-120b','openai/gpt-oss-20b'];let last={c:'net'};
+ for(const m of ms){try{let r;
+  if(gem)r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+m+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys()}]},contents:msgs.map(x=>({role:x.r==='user'?'user':'model',parts:[{text:x.t}]})),generationConfig:{responseMimeType:'application/json'}})});
+  else r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify({model:m,messages:[{role:'system',content:sys()},...msgs.map(x=>({role:x.r==='user'?'user':'assistant',content:x.t}))]})});
+  if(!r.ok){last={c:'http',s:r.status};if(r.status==401||r.status==403)throw last;continue}
+  const j=await r.json(),t=gem?((j.candidates?.[0]?.content?.parts)||[]).map(p=>p.text||'').join(''):(j.choices?.[0]?.message?.content||'');
+  if(t)return{t,m};last={c:'empty'}}catch(e){if(e.c==='http'&&(e.s==401||e.s==403))throw e;if(e.c)last=e}}throw last}
+function parse(t){let s=String(t).trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim(),o=null;try{o=JSON.parse(s)}catch(e){const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a)try{o=JSON.parse(s.slice(a,b+1))}catch(x){}}
+ return o&&typeof o==='object'?{say:String(o.say||''),actions:Array.isArray(o.actions)?o.actions:[]}:{say:String(t).trim(),actions:[]}}
+const errT=e=>!e?tr('Что-то пошло не так.'):e.c==='nokey'?tr('Сначала добавьте API-ключ в «Настройках».'):e.c==='net'?tr('Нет связи с нейросетью. Проверьте интернет.'):e.c==='empty'?tr('Пустой ответ нейросети.'):e.c==='http'?(e.s==401||e.s==403?tr('Ключ не подошёл ({0}).',e.s):e.s==429?tr('Лимит запросов, подождите минуту.'):tr('Ошибка нейросети {0}.',e.s)):tr('Что-то пошло не так.');
+async function weather(c){try{const g=await(await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=ru&name='+encodeURIComponent(c||''))).json(),r=g.results?.[0];if(!r)return 'город не найден';const f=await(await fetch('https://api.open-meteo.com/v1/forecast?latitude='+r.latitude+'&longitude='+r.longitude+'&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1')).json();return JSON.stringify({город:r.name,сейчас:f.current,сегодня:f.daily})}catch(e){return 'нет данных о погоде'}}
+async function ai(text){const base=hist.length;hist.push({r:'user',t:text});
+ try{const trim=()=>{const a=hist.slice(-12);while(a.length&&a[0].r!=='user')a.shift();return a};let r=await model(trim()),p=parse(r.t);hist.push({r:'bot',t:r.t});
+  const w=p.actions.find(a=>a&&a.type==='weather');if(w){hist.push({r:'user',t:'[Погода] '+await weather(w.arg)+'\nОтветь по этим данным.'});r=await model(trim());p=parse(r.t);hist.push({r:'bot',t:r.t})}
+  const done=p.actions.filter(a=>a&&AI_ACTS.includes(a.type));runActs(done);return{say:p.say||(done.length?tr('Выполняю.'):'...'),done:done.map(a=>a.type+(a.arg?': '+a.arg:'')),meta:r.m.split('/').pop()}}
+ catch(e){hist.length=base;return{say:errT(e),meta:tr('ошибка')}}}
+// ---- local commands ----
+const J={ru:['Телефон на 1% — это не заряд, это испытание характера.','Почему программисты путают Хэллоуин и Рождество? Oct 31 = Dec 25.','— Сколько программистов нужно, чтобы вкрутить лампочку?\n— Нисколько, это аппаратная проблема.','Будильник — единственное устройство, которое каждое утро делает вид, что оно вас не предаёт.'],
+en:['Why do programmers mix up Halloween and Christmas? Because Oct 31 = Dec 25.','How many programmers does it take to change a light bulb? None, that\'s a hardware problem.','A phone at 1% is not a charge level, it is a test of character.','There are 10 kinds of people: those who understand binary and those who don\'t.'],
+uk:['Чому програмісти плутають Гелловін і Різдво? Бо Oct 31 = Dec 25.','— Скільки програмістів треба, щоб вкрутити лампочку?\n— Жодного, це апаратна проблема.','Телефон на 1% — це не заряд, це випробування характеру.','Існує 10 типів людей: ті, хто розуміє двійкову систему, і ті, хто ні.']},
+F={ru:['Мёд практически не портится: его находили в гробницах Египта съедобным.','У осьминога три сердца.','На Венере сутки длиннее года.','Акулы появились раньше деревьев.'],
+en:['Honey practically never spoils: edible honey has been found in Egyptian tombs.','An octopus has three hearts.','A day on Venus is longer than its year.','Sharks are older than trees.'],
+uk:['Мед майже не псується: його знаходили їстівним у гробницях Єгипту.','У восьминога три серця.','На Венері доба довша за рік.','Акули з\'явилися раніше за дерева.']},
+B={ru:['Безусловно, сэр.','Расчёты говорят: да.','Пока неясно, спросите позже.','Мои данные говорят: нет.','Определённо нет.'],
+en:['Without a doubt, sir.','My calculations say yes.','Unclear for now, ask later.','My data says no.','Definitely not.'],
+uk:['Безумовно, сер.','Розрахунки кажуть: так.','Поки неясно, спитайте пізніше.','Мої дані кажуть: ні.','Однозначно ні.']};
+const pk=o=>pick(o[lang]||o.ru);
+const rn=n=>1+Math.floor(Math.random()*n);
+function calc(raw){const e=raw.replace(/,/g,'.').replace(/×/g,'*').replace(/÷/g,'/').replace(/\^/g,'**');if(!/^[0-9+\-*\/().%\s]+$/.test(e))return null;try{const r=Function('"use strict";return ('+e+')')();return typeof r==='number'&&isFinite(r)?+r.toFixed(10):null}catch(x){return null}}
+function local(c){let m;
+ if(/который час|сколько времени|what time|time is it|котра година|скільки часу|котра зараз/.test(c))return tr('Сейчас {0}, сэр.',new Date().toLocaleTimeString(LC[lang],{hour:'2-digit',minute:'2-digit'}));
+ if(/монет|coin/.test(c))return tr(pick(['Орёл, сэр.','Решка, сэр.']));
+ if(/d20|д20/.test(c))return tr('Выпало {0}, сэр.',rn(20));
+ if(/кубик|кубік|dice|roll a die/.test(c))return tr('Выпало {0}, сэр.',rn(6));
+ if(m=c.match(/(?:числ|number).*?(\d+)\D+(\d+)/)){const a=+m[1],b=+m[2];return tr('Ваше число: {0}',a+Math.floor(Math.random()*(b-a+1)))}
+ if(/анекдот|шутк|жарт|joke/.test(c))return pk(J);if(/факт|fact/.test(c))return pk(F);
+ if(/\bшар|куля|кулю|magic ball|8.ball/.test(c))return pk(B);
+ if(m=c.match(/(?:таймер на|timer for|set a timer for)\s*(\d+)\s*(?:мин|хв|min)/)){remind(m[1]*60,tr('Время вышло, сэр'));return tr('Таймер на {0} мин запущен.',m[1])}
+ if(m=c.match(/(?:посчитай|сколько будет|порахуй|скільки буде|calculate|what is)\s+(.+)/)){const r=calc(m[1]);return r===null?null:m[1]+' = '+r}
+ if(m=c.match(/(?:запиши заметку|запиши замітку|запиши нотатку|add a note|\bnote)\s+(.+)/)){notes.unshift(m[1].slice(0,500));sv('notes',notes);rLists();return tr('Записал, сэр.')}
+ if(/фонарик|flashlight|torch|ліхтар/.test(c)){const off=/выкл|off|вимкни|погаси/.test(c);flashOn=!off;act(off?'flashlight_off':'flashlight_on','');return tr('Выполняю.')}
+ if(/секундомер|секундомір|stopwatch/.test(c)){swT();return sw.run?tr('Секундомер запущен.'):fm(swn())}
+ if(m=c.match(/(?:выбери|обери|choose|pick)\s+(.+?)\s+(?:или|чи|або|or)\s+(.+)/))return tr('Я выбираю: {0}',pick([m[1],m[2]]));
+ return null}
+async function handle(raw){const c=raw.toLowerCase().replace(/[.,!?]/g,' ').replace(/\s+/g,' ').trim();log(tr('Вы:')+' '+raw);
+ for(const a of autos)if(a.t&&c.includes(a.t)){log(tr('Автоматизация:')+' '+a.t);runActs(a.a);log('Jarvis: '+(a.say||tr('Выполняю.')));return{say:a.say||tr('Выполняю.'),done:(a.a||[]).map(x=>x.type)}}
+ const l=local(c);if(l){log('Jarvis: '+l);return{say:l}}
+ const r=await ai(raw);log('Jarvis: '+r.say);return r}
+// ---- voice ----
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function start(){if(!key){toast('Сначала добавьте API-ключ');nav('set');return}if(!SR){toast('Нужен Edge или Chrome');return}
+ running=true;ui();lockScreen();rec=new SR();rec.lang=LC[lang];rec.continuous=true;rec.interimResults=false;
+ rec.onresult=async ev=>{const t=ev.results[ev.results.length-1][0].transcript.trim();$('heard').textContent='«'+t+'»';const c=t.toLowerCase();const wm=c.match(WAKE),i=wm?wm.index:-1;
+  if(i<0&&Date.now()>awake)return;const cmd=(i>=0?t.slice(i+wm[0].length):t).replace(/^[\s,.!:-]+/,'');
+  if(!cmd){awake=Date.now()+8000;log('Jarvis: '+tr('Слушаю, сэр.'));return speak(tr('Слушаю, сэр.'))}awake=0;const r=await handle(cmd);speakForce(r.say);chat('u',cmd);chat('b',r.say,r.meta,r.done)};
+ rec.onerror=e=>{if(e.error!=='no-speech'&&e.error!=='aborted')log(tr('Микрофон:')+' '+e.error)};
+ rec.onend=()=>{if(running)try{rec.start()}catch(e){}};try{rec.start()}catch(e){}log('Запущено. Скажите: «Джарвис, привет».')}
+function stop(){running=false;unlock();try{rec.stop()}catch(e){}ui()}
+function speakForce(t){speak(t)}
+function ui(){$('keyWarn').style.display=key?'none':'block';$('reactor').classList.toggle('off',!running);$('state').textContent=tr(running?'ОНЛАЙН · СЛУШАЮ':'ОТКЛЮЧЁН');$('state').classList.toggle('off',!running);$('mainBtn').className='btn '+(running?'stop':'main');$('mainBtn').textContent=tr(running?'■ Остановить':'▶ Запустить Jarvis');$('heard').textContent=tr(running?'Скажите «Джарвис», затем команду':'Нажмите на реактор — и скажите «Джарвис»')}
+// ---- chat ----
+function chat(role,text,meta,acts){const e=$('empty');if(e)e.remove();const d=document.createElement('div');d.className='m '+role;d.textContent=text;
+ if(acts&&acts.length){const w=document.createElement('div');w.style.marginTop='6px';acts.forEach(a=>{const c=document.createElement('span');c.className='chip';c.textContent=a;w.appendChild(c)});d.appendChild(w)}
+ if(meta){const s=document.createElement('small');s.textContent=meta;d.appendChild(s)}$('chatlog').appendChild(d);$('chatlog').scrollTop=1e9;return d}
+async function send(){const i=$('chatin'),t=i.value.trim();if(!t||busy)return;i.value='';busy=true;chat('u',t);const th=chat('b',tr('Джарвис думает…'));const r=await handle(t);th.remove();chat('b',r.say,r.meta,r.done);speak(r.say);busy=false}
+// ---- nav / UI ----
+function nav(t){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('act',e.id==='t-'+t));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.t===t));if(t==='auto')rAutos()}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>nav(b.dataset.t));
+$('reactor').onclick=$('mainBtn').onclick=()=>running?stop():start();$('clr').onclick=()=>{logA=[];log('Журнал очищен')};
+$('send').onclick=send;$('chatin').onkeydown=e=>{if(e.key==='Enter')send()};
+$('key').value=key;$('key').oninput=()=>$('prov').textContent=$('key').value.startsWith('gsk_')?'GROQ':$('key').value.startsWith('AIza')?'GEMINI':'';$('key').oninput();
+$('saveK').onclick=()=>{key=$('key').value.trim();sv('key',key);ui();toast(key?'Ключ сохранён ✓':'Ключ очищен')};
+document.querySelectorAll('[data-url]').forEach(b=>b.onclick=()=>launch(b.dataset.url));
+$('spk').checked=ls('spk',true);$('spk').onchange=()=>sv('spk',$('spk').checked);
+// pult
+function mkPult(){$('pult').innerHTML=[['flash','🔦 Фонарик'],['camera','📷 Камера'],['wifi_settings','📶 Wi-Fi'],['bluetooth_settings','🔵 Bluetooth']].map(a=>'<button class="chip" data-a="'+a[0]+'">'+tr(a[1])+'</button>').join('');document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{if(b.dataset.a==='flash'){flashOn=!flashOn;act(flashOn?'flashlight_on':'flashlight_off','')}else act(b.dataset.a,'')})}
+document.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>{const id=b.dataset.do.match(/app/)?'app':'web',v=$(id).value.trim();if(!v)return toast('Введите значение');act(b.dataset.do,v)});
+$('repB').onclick=()=>{const d=new Date(),h=d.getHours(),L=LC[lang];$('rep').textContent=tr(h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер')+', '+(lang==='uk'?'сер':lang==='en'?'sir':'сэр')+'.\n'+d.toLocaleTimeString(L,{hour:'2-digit',minute:'2-digit'})+', '+d.toLocaleDateString(L,{weekday:'long',day:'numeric',month:'long'})+'.\n'+tr('Все системы в норме.');
+ try{navigator.getBattery().then(b=>$('rep').textContent+='\n'+tr('Заряд: {0}%',Math.round(b.level*100))+(b.charging?' ⚡':''))}catch(e){}};
+$('ballB').onclick=()=>{if(!$('ballq').value.trim())return toast('Задайте вопрос');$('ballo').textContent='🎱 '+pk(B)};
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>$('rnd').textContent=b.dataset.r==='coin'?'🪙 '+tr(pick(['Орёл','Решка'])):'🎲 '+rn(+b.dataset.r));
+$('jokeB').onclick=()=>$('jk').textContent=pk(J);$('factB').onclick=()=>$('jk').textContent='🔭 '+pk(F);
+document.querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{remind(b.dataset.tm*60,tr('Время вышло, сэр'));toast(tr('Напомню через {0} мин ⏱',b.dataset.tm))});
+$('calcB').onclick=()=>{const r=calc($('calc').value);$('calco').textContent=r===null?tr('Не понял пример, сэр.'):$('calc').value+' = '+r};$('calc').onkeydown=e=>{if(e.key==='Enter')$('calcB').click()};
+// notes / todos
+let notes=ls('notes',[]),todos=ls('todos',[]);
+function rLists(){$('notes').innerHTML=notes.map((n,i)=>'<div class="xi"><span>'+esc(n)+'</span><button data-n="'+i+'">✕</button></div>').join('');
+ $('todos').innerHTML=todos.map((t,i)=>'<div class="xi"><button data-d="'+i+'">'+(t.d?'✓':'○')+'</button><span class="'+(t.d?'done':'')+'">'+esc(t.t)+'</span><button data-x="'+i+'">✕</button></div>').join('');
+ document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{notes.splice(b.dataset.n,1);sv('notes',notes);rLists()});
+ document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{todos[b.dataset.d].d=!todos[b.dataset.d].d;sv('todos',todos);rLists()});
+ document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{todos.splice(b.dataset.x,1);sv('todos',todos);rLists()})}
+$('nin').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim()){notes.unshift(e.target.value.trim().slice(0,500));sv('notes',notes);e.target.value='';rLists()}};
+$('tin').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim()){todos.push({t:e.target.value.trim().slice(0,200),d:false});sv('todos',todos);e.target.value='';rLists()}};rLists();
+// automations
+let edit=-1,draft=[];
+function rAutos(){$('autos').innerHTML=autos.length?autos.map((a,i)=>'<div class="card"><div style="font-weight:700;color:var(--ac)">«Джарвис, '+esc(a.t)+'»</div>'+(a.say?'<div class="t2" style="margin-top:6px">💬 '+esc(a.say)+'</div>':'')+'<div class="row">'+(a.a||[]).map(x=>'<span class="chip">'+esc(tr((TYPES[x.type]||[x.type])[0]))+(x.arg?': '+esc(x.arg.slice(0,24)):'')+'</span>').join('')+'</div><div class="row"><button class="btn" data-e="'+i+'">✎</button><button class="btn" data-p="'+i+'">▶</button><button class="btn" data-k="'+i+'">🗑</button></div></div>').join(''):'<div class="t2">'+tr('Пока пусто. Нажмите «＋ Новая».')+'</div>';
+ document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>open(+b.dataset.e));document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>runActs(autos[b.dataset.p].a));
+ document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{autos.splice(b.dataset.k,1);sv('autos',autos);rAutos()})}
+function rActs(){$('fA').innerHTML=draft.map((d,i)=>'<div class="ar"><select data-s="'+i+'">'+Object.entries(TYPES).map(([k,v])=>'<option value="'+k+'"'+(k===d.type?' selected':'')+'>'+tr(v[0])+'</option>').join('')+'</select>'+(TYPES[d.type][1]?'<input data-i="'+i+'" value="'+esc(d.arg)+'" placeholder="'+esc(tr(TYPES[d.type][1]))+'">':'<div class="t2" style="padding:9px">'+tr('без параметров')+'</div>')+'<button data-r2="'+i+'">✕</button></div>').join('');
+ document.querySelectorAll('[data-s]').forEach(s=>s.onchange=()=>{draft[s.dataset.s].type=s.value;if(!TYPES[s.value][1])draft[s.dataset.s].arg='';rActs()});
+ document.querySelectorAll('[data-i]').forEach(s=>s.oninput=()=>draft[s.dataset.i].arg=s.value);document.querySelectorAll('[data-r2]').forEach(s=>s.onclick=()=>{draft.splice(s.dataset.r2,1);rActs()})}
+function open(i){edit=i;const a=i>=0?autos[i]:{t:'',say:'',a:[]};$('mt').textContent=tr(i>=0?'Изменить автоматизацию':'Новая автоматизация');$('fT').value=a.t;$('fS').value=a.say||'';draft=JSON.parse(JSON.stringify(a.a||[]));if(!draft.length)draft=[{type:'youtube',arg:''}];rActs();$('veil').classList.add('show')}
+$('newA').onclick=()=>open(-1);$('cancelA').onclick=()=>$('veil').classList.remove('show');$('addA').onclick=()=>{draft.push({type:'youtube',arg:''});rActs()};
+$('saveA').onclick=()=>{const t=$('fT').value.trim().toLowerCase();if(!t)return toast('Введите фразу-триггер');const a=draft.filter(d=>!TYPES[d.type][1]||d.arg.trim()).map(d=>({type:d.type,arg:d.arg.trim()})),say=$('fS').value.trim();if(!a.length&&!say)return toast('Добавьте действие или ответ');
+ const o={t,say,a};edit>=0?autos[edit]=o:autos.push(o);sv('autos',autos);$('veil').classList.remove('show');rAutos();toast('Сохранено ✓')};
+const UN={'Длина':{mm:.001,cm:.01,m:1,km:1000,in:.0254,ft:.3048,mi:1609.344},'Масса':{g:.001,kg:1,t:1000,oz:.028349523,lb:.45359237},'Объём':{ml:.001,l:1,gal:3.785411784},'Скорость':{'m/s':1,'km/h':.2777777778,mph:.44704,kn:.5144444444},'Температура':{'°C':1,'°F':1,K:1}};
+function conv(){const o=$('cvo'),v=parseFloat($('cvv').value.replace(',','.'));if(isNaN(v)){o.textContent=tr('Результат появится здесь.');return}const c=$('cvc').value,f=$('cvf').value,t=$('cvt').value;let r;
+ if(c==='Температура'){const k=f==='°C'?v:f==='°F'?(v-32)*5/9:v-273.15;r=t==='°C'?k:t==='°F'?k*9/5+32:k+273.15}else r=v*UN[c][f]/UN[c][t];o.textContent=v+' '+f+' = '+(+r.toPrecision(8))+' '+t}
+function cvFill(){const k=Object.keys(UN[$('cvc').value]);$('cvf').innerHTML=$('cvt').innerHTML=k.map(x=>'<option>'+x+'</option>').join('');$('cvt').selectedIndex=Math.min(1,k.length-1);conv()}
+function fillCats(){const c=$('cvc'),cur=c.value||'Длина';c.innerHTML=Object.keys(UN).map(k=>'<option value="'+k+'">'+tr(k)+'</option>').join('');c.value=cur;if(!$('cvf').options.length)cvFill()}
+$('cvc').onchange=cvFill;$('cvv').oninput=conv;$('cvf').onchange=$('cvt').onchange=conv;
+function rint(n){const a=new Uint32Array(1),l=Math.floor(4294967296/n)*n;let v;do{crypto.getRandomValues(a);v=a[0]}while(v>=l);return v%n}
+function genPw(n){n=Math.min(64,Math.max(8,n||16));const st=['abcdefghijkmnopqrstuvwxyz','ABCDEFGHJKLMNPQRSTUVWXYZ','23456789','!@#$%^&*-_=+?'],all=st.join(''),o=st.map(x=>x[rint(x.length)]);while(o.length<n)o.push(all[rint(all.length)]);for(let i=o.length-1;i>0;i--){const j=rint(i+1);[o[i],o[j]]=[o[j],o[i]]}return o.join('')}
+$('pwb').onclick=()=>$('pwo').textContent=genPw(+$('pwl').value);
+let sw={run:0,t0:0,acc:0,iv:0,laps:[]};const p2=n=>(n<10?'0':'')+n,fm=ms=>p2(Math.floor(ms/6e4))+':'+p2(Math.floor(ms/1e3)%60)+'.'+p2(Math.floor(ms/10)%100),swn=()=>sw.acc+(sw.run?Date.now()-sw.t0:0),swd=()=>$('swo').textContent=fm(swn());
+function swT(){if(sw.run){sw.acc+=Date.now()-sw.t0;sw.run=0;clearInterval(sw.iv);$('swb').textContent=tr('Продолжить')}else{sw.t0=Date.now();sw.run=1;sw.iv=setInterval(swd,50);$('swb').textContent=tr('Пауза')}swd()}
+function swL(){if(swn()>0){sw.laps.push(fm(swn()));$('swl').textContent=sw.laps.slice(-8).reverse().map((l,i)=>(sw.laps.length-i)+'. '+l).join('\n')}}
+function swR(){clearInterval(sw.iv);sw={run:0,t0:0,acc:0,iv:0,laps:[]};$('swb').textContent=tr('Старт');swd();$('swl').textContent=''}
+$('swb').onclick=swT;$('swl2').onclick=swL;$('swr').onclick=swR;
+function domTr(){const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const p=n.parentNode;if(p.closest('#log,script,style,#toast,.m'))continue;if(n._o===undefined)n._o=n.data;const m=n._o.match(/^(\s*)([\s\S]*?)(\s*)$/);if(m[2]&&D[m[2]])n.data=m[1]+tr(m[2])+m[3]}
+ document.querySelectorAll('[placeholder]').forEach(e=>{if(e._p===undefined)e._p=e.placeholder;e.placeholder=tr(e._p)})}
+function setLang(l,init){lang=l;sv('lang',l);$('lang').value=l;document.querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===l));document.documentElement.lang=l;domTr();mkPult();fillCats();rAutos();ui();if(!init&&rec&&running){rec.lang=LC[lang];try{rec.stop()}catch(e){}}}
+document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+$('lang').onchange=()=>setLang($('lang').value);
+$('pendB').onclick=()=>{const x=pend.shift();showPend();if(x)launch(x.u)};
+$('toSet').onclick=()=>nav('set');
+$('micB').onclick=()=>navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{st.getTracks().forEach(t=>t.stop());toast('OK ✓')}).catch(()=>toast('Микрофон: blocked'));
+$('callB').onclick=()=>act('call',$('c_call').value);$('smsB').onclick=()=>act('sms',$('c_call').value+'|'+$('c_smsT').value);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+setLang(lang,true);log('Готов к работе, сэр.');
+</script></body></html>
